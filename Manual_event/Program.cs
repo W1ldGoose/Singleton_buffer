@@ -4,16 +4,16 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Lock
+namespace Manual_proj
 {
     class Program
     {
-        static int writersCount = 2;
-        static int readersCount = 2;
+        static int writersCount = 7;
+        static int readersCount = 10;
 
-        static int messagesCount = 100;
+        static int messagesCount = 500;
 
-        private static int messageLength = 4;
+        private static int messageLength = 50;
 
         // массив сообщений писателей
         static string[,] messages = new string[writersCount, messagesCount];
@@ -54,14 +54,16 @@ namespace Lock
             int i = 0;
             while (i < messagesCount)
             {
-                // ждем сигнал что буффер пустой
-                eventEmpty.WaitOne();
                 lock ("write")
                 {
-                    buffer = messages[index, i++];
-                    eventFull.Set();
+                    eventEmpty.WaitOne();
                     eventEmpty.Reset();
                 }
+                
+              //  eventEmpty.Set();
+                buffer = messages[index, i++];
+               
+                eventFull.Set();
 
             }
         }
@@ -73,21 +75,20 @@ namespace Lock
             while (!isBufferFinish)
             {
                 // ждем сигнал, что буффер заполнен
-                eventFull.WaitOne();
+                lock ("read")
+                {
+                    eventFull.WaitOne();
+                    eventFull.Reset();
+                }
+                
                 if (isBufferFinish)
                 {
                     eventFull.Set();
                     break;
-                   
                 }
-                lock ("read")
-                {
-                    readedMessages[index].Add(buffer);
-                    eventEmpty.Set();
-                    eventFull.Reset();
-                }
+                readedMessages[index].Add(buffer);
+                eventEmpty.Set();
 
-               
             }
         }
 

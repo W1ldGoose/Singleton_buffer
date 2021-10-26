@@ -4,7 +4,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Auto_Reset
+namespace Interlock
 {
     class Program
     {
@@ -19,15 +19,13 @@ namespace Auto_Reset
         static string[,] messages = new string[writersCount, messagesCount];
 
         static string buffer;
-
-        //static bool isBufferEmpty = true;
+        static bool isBufferEmpty = true;
         static bool isBufferFinish = false;
         private static List<string>[] readedMessages = new List<string>[readersCount];
         private static Thread[] writers = new Thread[writersCount];
         private static Thread[] readers = new Thread[readersCount];
-
-        private static AutoResetEvent eventFinish = new AutoResetEvent(false);
-        private static AutoResetEvent eventEmpty = new AutoResetEvent(true);
+        private static int isEmpty = 1;
+        private static int isFinish = 0;
 
         // заполнение массива сообщений
         static void FillMessages()
@@ -55,30 +53,27 @@ namespace Auto_Reset
             int i = 0;
             while (i < messagesCount)
             {
-                eventEmpty.WaitOne();
-                buffer = messages[index, i++];
-                // isBufferEmpty = false;
-                eventFinish.Set();
+                if (Interlocked.CompareExchange(ref isEmpty, 0, 1) == 1)
+                {
+                    buffer = messages[index, i++];
+                    isFinish = 1;
+                }
             }
         }
+
 
         static void ReadBuffer(object readerIndex)
         {
             int index = (int) readerIndex;
             readedMessages[index] = new List<string>();
-
             while (!isBufferFinish)
             {
-                eventFinish.WaitOne();
-                if (isBufferFinish)
+                if (isBufferFinish) break;
+                if (Interlocked.CompareExchange(ref isFinish, 0, 1) == 1)
                 {
-                    eventFinish.Set();
-                    break;
+                    readedMessages[index].Add(buffer);
+                    isEmpty = 1;
                 }
-
-                readedMessages[index].Add(buffer);
-                // isBufferEmpty = true;
-                eventEmpty.Set();
             }
         }
 
@@ -90,7 +85,9 @@ namespace Auto_Reset
             stopwatch.Start();
 
             // запускаем писателей
-            for (int i = 0; i < writersCount; i++)
+            for (int i = 0;
+                i < writersCount;
+                i++)
             {
                 writers[i] = new Thread(WriteBuffer);
                 writers[i].Start(i);
@@ -109,8 +106,6 @@ namespace Auto_Reset
             }
 
             isBufferFinish = true;
-            eventFinish.Set();
-
             for (int i = 0; i < readersCount; i++)
             {
                 readers[i].Join();

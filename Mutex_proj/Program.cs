@@ -3,8 +3,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualBasic;
 
-namespace Auto_Reset
+namespace Mutex_proj
 {
     class Program
     {
@@ -19,15 +20,12 @@ namespace Auto_Reset
         static string[,] messages = new string[writersCount, messagesCount];
 
         static string buffer;
-
-        //static bool isBufferEmpty = true;
+        static bool isBufferEmpty = true;
         static bool isBufferFinish = false;
         private static List<string>[] readedMessages = new List<string>[readersCount];
         private static Thread[] writers = new Thread[writersCount];
         private static Thread[] readers = new Thread[readersCount];
-
-        private static AutoResetEvent eventFinish = new AutoResetEvent(false);
-        private static AutoResetEvent eventEmpty = new AutoResetEvent(true);
+        private static Mutex mut = new Mutex(false);
 
         // заполнение массива сообщений
         static void FillMessages()
@@ -55,10 +53,18 @@ namespace Auto_Reset
             int i = 0;
             while (i < messagesCount)
             {
-                eventEmpty.WaitOne();
-                buffer = messages[index, i++];
-                // isBufferEmpty = false;
-                eventFinish.Set();
+                if (!mut.WaitOne(1000))
+                {
+                    return;
+                }
+
+                if (isBufferEmpty)
+                {
+                    buffer = messages[index, i++];
+                    isBufferEmpty = false;
+                }
+
+                mut.ReleaseMutex();
             }
         }
 
@@ -66,26 +72,27 @@ namespace Auto_Reset
         {
             int index = (int) readerIndex;
             readedMessages[index] = new List<string>();
-
             while (!isBufferFinish)
             {
-                eventFinish.WaitOne();
-                if (isBufferFinish)
+                if (!mut.WaitOne(1000))
                 {
-                    eventFinish.Set();
-                    break;
+                    return;
                 }
 
-                readedMessages[index].Add(buffer);
-                // isBufferEmpty = true;
-                eventEmpty.Set();
+                if (!isBufferEmpty)
+                {
+                    readedMessages[index].Add(buffer);
+                    isBufferEmpty = true;
+                }
+
+                mut.ReleaseMutex();
             }
         }
-
 
         static void Main(string[] args)
         {
             FillMessages();
+
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -109,7 +116,6 @@ namespace Auto_Reset
             }
 
             isBufferFinish = true;
-            eventFinish.Set();
 
             for (int i = 0; i < readersCount; i++)
             {
@@ -118,14 +124,17 @@ namespace Auto_Reset
 
             stopwatch.Stop();
             TimeSpan timeSpan = stopwatch.Elapsed;
+
             string[] receivedMessages = readedMessages.SelectMany(x => x)
                 .ToArray();
             string[] lostMessages = messages.Cast<string>()
                 .Except(readedMessages.SelectMany(x => x)).ToArray();
+
             var dublicates = receivedMessages.GroupBy(x => x)
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
+
             foreach (var v in lostMessages)
             {
                 Console.WriteLine(v);

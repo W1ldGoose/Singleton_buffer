@@ -4,7 +4,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Manual_event
+namespace Lock
 {
     class Program
     {
@@ -19,14 +19,14 @@ namespace Manual_event
         static string[,] messages = new string[writersCount, messagesCount];
 
         static string buffer;
-        //static bool isBufferEmpty = true;
+        static bool isBufferEmpty = true;
         static bool isBufferFinish = false;
         private static List<string>[] readedMessages = new List<string>[readersCount];
         private static Thread[] writers = new Thread[writersCount];
         private static Thread[] readers = new Thread[readersCount];
 
-        private static  ManualResetEvent eventFinish = new ManualResetEvent(false);
-        private static ManualResetEvent eventEmpty = new ManualResetEvent(false);
+        private static ManualResetEvent eventEmpty = new ManualResetEvent(true);
+        private static ManualResetEvent eventFull = new ManualResetEvent(false);
 
         // заполнение массива сообщений
         static void FillMessages()
@@ -54,14 +54,15 @@ namespace Manual_event
             int i = 0;
             while (i < messagesCount)
             {
-                // ждем сигнала о том что буффер пустой
-                
+                // ждем сигнал что буффер пустой
                 eventEmpty.WaitOne();
-                buffer = messages[index, i++];
-                eventEmpty.Reset();
-               // isBufferEmpty = false;
-                eventFinish.Set();
-                
+                lock ("write")
+                {
+                    buffer = messages[index, i++];
+                    eventFull.Set();
+                    eventEmpty.Reset();
+                }
+
             }
         }
 
@@ -69,32 +70,34 @@ namespace Manual_event
         {
             int index = (int) readerIndex;
             readedMessages[index] = new List<string>();
-
             while (!isBufferFinish)
             {
-                // ждем сигнала, что буффер заполнен
-                eventFinish.WaitOne();
-                
+                // ждем сигнал, что буффер заполнен
+                eventFull.WaitOne();
                 if (isBufferFinish)
                 {
-                    eventFinish.Set();
+                    eventFull.Set();
                     break;
+                   
                 }
-                readedMessages[index].Add(buffer);
-                eventFinish.Reset();
-               // isBufferEmpty = true;
-                eventEmpty.Set();
+                lock ("read")
+                {
+                    readedMessages[index].Add(buffer);
+                    eventEmpty.Set();
+                    eventFull.Reset();
+                }
+
+               
             }
         }
-
 
         static void Main(string[] args)
         {
             FillMessages();
+
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            
             // запускаем писателей
             for (int i = 0; i < writersCount; i++)
             {
@@ -113,9 +116,10 @@ namespace Manual_event
             {
                 writers[i].Join();
             }
+
             isBufferFinish = true;
-            eventFinish.Set();
-            
+            eventFull.Set();
+
             for (int i = 0; i < readersCount; i++)
             {
                 readers[i].Join();
@@ -123,14 +127,17 @@ namespace Manual_event
 
             stopwatch.Stop();
             TimeSpan timeSpan = stopwatch.Elapsed;
+
             string[] receivedMessages = readedMessages.SelectMany(x => x)
                 .ToArray();
             string[] lostMessages = messages.Cast<string>()
                 .Except(readedMessages.SelectMany(x => x)).ToArray();
+
             var dublicates = receivedMessages.GroupBy(x => x)
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
+
             foreach (var v in lostMessages)
             {
                 Console.WriteLine(v);

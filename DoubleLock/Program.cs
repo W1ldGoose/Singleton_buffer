@@ -8,12 +8,12 @@ namespace DoubleLock
 {
     class Program
     {
-        static int writersCount = 2;
-        static int readersCount = 2;
+        static int writersCount = 10;
+        static int readersCount = 7;
 
-        static int messagesCount = 100;
+        static int messagesCount = 500;
 
-        private static int messageLength = 4;
+        private static int messageLength = 50;
 
         // массив сообщений писателей
         static string[,] messages = new string[writersCount, messagesCount];

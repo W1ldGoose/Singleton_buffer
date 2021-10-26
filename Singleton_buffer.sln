@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auto_Reset", "Auto_Reset\Au
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Manual_event", "Manual_event\Manual_event.csproj", "{E5DF3E39-00F1-4C5E-B201-BFE067910695}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interlock", "Interlock\Interlock.csproj", "{D2111684-BE33-46D1-90F7-9BEA44F17F9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mutex_proj", "Mutex_proj\Mutex_proj.csproj", "{44AF1871-2703-4062-915A-EDDFCB8B3E22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{E5DF3E39-00F1-4C5E-B201-BFE067910695}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5DF3E39-00F1-4C5E-B201-BFE067910695}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5DF3E39-00F1-4C5E-B201-BFE067910695}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2111684-BE33-46D1-90F7-9BEA44F17F9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2111684-BE33-46D1-90F7-9BEA44F17F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2111684-BE33-46D1-90F7-9BEA44F17F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2111684-BE33-46D1-90F7-9BEA44F17F9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44AF1871-2703-4062-915A-EDDFCB8B3E22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44AF1871-2703-4062-915A-EDDFCB8B3E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44AF1871-2703-4062-915A-EDDFCB8B3E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44AF1871-2703-4062-915A-EDDFCB8B3E22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

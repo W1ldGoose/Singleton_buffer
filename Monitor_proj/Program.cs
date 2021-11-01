@@ -4,7 +4,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DoubleIfMonitor
+namespace Monitor_proj
 {
     class Program
     {
@@ -57,6 +57,7 @@ namespace DoubleIfMonitor
                     buffer = messages[index, i++];
                     isBufferEmpty = false;
                 }
+
                 Monitor.Exit("write");
             }
         }
@@ -67,16 +68,14 @@ namespace DoubleIfMonitor
             readedMessages[index] = new List<string>();
             while (!isBufferFinish)
             {
+                Monitor.Enter("read");
                 if (!isBufferEmpty)
                 {
-                    Monitor.Enter("read");
-                    if (!isBufferEmpty)
-                    {
-                        readedMessages[index].Add(buffer);
-                        isBufferEmpty = true;
-                    }
-                    Monitor.Exit("read");
+                    readedMessages[index].Add(buffer);
+                    isBufferEmpty = true;
                 }
+
+                Monitor.Exit("read");
             }
         }
 

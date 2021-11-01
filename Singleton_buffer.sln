@@ -8,11 +8,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoubleLock", "DoubleLock\Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auto_Reset", "Auto_Reset\Auto_Reset.csproj", "{33C1D39F-046B-490D-9D42-86372196D995}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Manual_eventSlim", "Manual_eventSlim\Manual_eventSlim.csproj", "{E5DF3E39-00F1-4C5E-B201-BFE067910695}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Semaphore_proj", "Semaphore_proj\Semaphore_proj.csproj", "{E5DF3E39-00F1-4C5E-B201-BFE067910695}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interlock", "Interlock\Interlock.csproj", "{D2111684-BE33-46D1-90F7-9BEA44F17F9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoubleIfMonitor", "DoubleIfMonitor\DoubleIfMonitor.csproj", "{EC2A6204-3A25-483B-BA99-55708DE37C7A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monitor_proj", "Monitor_proj\Monitor_proj.csproj", "{EC2A6204-3A25-483B-BA99-55708DE37C7A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

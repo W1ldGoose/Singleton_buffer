@@ -8,12 +8,12 @@ namespace Lock
 {
     class Program
     {
-        static int writersCount = 2;
-        static int readersCount = 2;
+        static int writersCount = 100;
+        static int readersCount = 100;
 
-        static int messagesCount = 100;
+        static int messagesCount = 5000;
 
-        private static int messageLength = 4;
+        private static int messageLength = 50;
 
         // массив сообщений писателей
         static string[,] messages = new string[writersCount, messagesCount];
@@ -39,7 +39,6 @@ namespace Lock
                     {
                         tmp += k;
                     }
-
                     messages[i, j] = tmp;
                 }
             }

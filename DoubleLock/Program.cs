@@ -8,10 +8,10 @@ namespace DoubleLock
 {
     class Program
     {
-        static int writersCount = 10;
-        static int readersCount = 7;
+        static int writersCount = 100;
+        static int readersCount = 100;
 
-        static int messagesCount = 500;
+        static int messagesCount = 5000;
 
         private static int messageLength = 50;
 
@@ -74,12 +74,11 @@ namespace DoubleLock
                     {
                         if (!isBufferEmpty)
                         {
-                            readedMessages[index].Add(buffer);
                             isBufferEmpty = true;
+                            readedMessages[index].Add(buffer);
                         }
                     }
                 }
-
             }
         }
 

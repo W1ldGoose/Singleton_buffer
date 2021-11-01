@@ -25,8 +25,8 @@ namespace Manual_proj
         private static Thread[] writers = new Thread[writersCount];
         private static Thread[] readers = new Thread[readersCount];
 
-        private static ManualResetEvent eventEmpty = new ManualResetEvent(true);
-        private static ManualResetEvent eventFull = new ManualResetEvent(false);
+        private static ManualResetEventSlim eventEmpty = new ManualResetEventSlim(true);
+        private static ManualResetEventSlim eventFull = new ManualResetEventSlim(false);
 
         // заполнение массива сообщений
         static void FillMessages()
@@ -54,13 +54,12 @@ namespace Manual_proj
             int i = 0;
             while (i < messagesCount)
             {
+                // без lock переход от ожидания до nonsignaled может происходить неатомарно
                 lock ("write")
                 {
-                    eventEmpty.WaitOne();
+                    eventEmpty.Wait();
                     eventEmpty.Reset();
                 }
-
-                //  eventEmpty.Set();
                 buffer = messages[index, i++];
 
                 eventFull.Set();
@@ -76,16 +75,14 @@ namespace Manual_proj
                 // ждем сигнал, что буффер заполнен
                 lock ("read")
                 {
-                    eventFull.WaitOne();
+                    eventFull.Wait();
                     eventFull.Reset();
                 }
-
                 if (isBufferFinish)
                 {
                     eventFull.Set();
                     break;
                 }
-
                 readedMessages[index].Add(buffer);
                 eventEmpty.Set();
             }

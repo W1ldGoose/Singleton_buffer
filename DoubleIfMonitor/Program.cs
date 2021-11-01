@@ -4,7 +4,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DoubleLock
+namespace DoubleIfMonitor
 {
     class Program
     {
@@ -51,14 +51,13 @@ namespace DoubleLock
             int i = 0;
             while (i < messagesCount)
             {
-                lock ("write")
+                Monitor.Enter("write");
+                if (isBufferEmpty)
                 {
-                    if (isBufferEmpty)
-                    {
-                        buffer = messages[index, i++];
-                        isBufferEmpty = false;
-                    }
+                    buffer = messages[index, i++];
+                    isBufferEmpty = false;
                 }
+                Monitor.Exit("write");
             }
         }
 
@@ -70,16 +69,14 @@ namespace DoubleLock
             {
                 if (!isBufferEmpty)
                 {
-                    lock ("read")
+                    Monitor.Enter("read");
+                    if (!isBufferEmpty)
                     {
-                        if (!isBufferEmpty)
-                        {
-                            readedMessages[index].Add(buffer);
-                            isBufferEmpty = true;
-                        }
+                        readedMessages[index].Add(buffer);
+                        isBufferEmpty = true;
                     }
+                    Monitor.Exit("read");
                 }
-
             }
         }
 

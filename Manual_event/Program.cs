@@ -59,12 +59,11 @@ namespace Manual_proj
                     eventEmpty.WaitOne();
                     eventEmpty.Reset();
                 }
-                
-              //  eventEmpty.Set();
-                buffer = messages[index, i++];
-               
-                eventFull.Set();
 
+                //  eventEmpty.Set();
+                buffer = messages[index, i++];
+
+                eventFull.Set();
             }
         }
 
@@ -80,15 +79,15 @@ namespace Manual_proj
                     eventFull.WaitOne();
                     eventFull.Reset();
                 }
-                
+
                 if (isBufferFinish)
                 {
                     eventFull.Set();
                     break;
                 }
+
                 readedMessages[index].Add(buffer);
                 eventEmpty.Set();
-
             }
         }
 

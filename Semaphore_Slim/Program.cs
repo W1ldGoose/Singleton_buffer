@@ -4,7 +4,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Manual_proj
+namespace Semaphore_Slim
 {
     class Program
     {
@@ -24,9 +24,11 @@ namespace Manual_proj
         private static List<string>[] readedMessages = new List<string>[readersCount];
         private static Thread[] writers = new Thread[writersCount];
         private static Thread[] readers = new Thread[readersCount];
-
-        private static ManualResetEvent eventEmpty = new ManualResetEvent(true);
-        private static ManualResetEvent eventFull = new ManualResetEvent(false);
+        
+        
+        private static SemaphoreSlim fullSem = new SemaphoreSlim(0, 1);
+        // начальное значение семафора 1 - буффер пустой
+        private static SemaphoreSlim emptySem = new SemaphoreSlim(1, 1);
 
         // заполнение массива сообщений
         static void FillMessages()
@@ -54,16 +56,11 @@ namespace Manual_proj
             int i = 0;
             while (i < messagesCount)
             {
-                lock ("write")
-                {
-                    eventEmpty.WaitOne();
-                    eventEmpty.Reset();
-                }
-
-                //  eventEmpty.Set();
+                // дожидаемся, когда буффер пустой
+                emptySem.Wait();
                 buffer = messages[index, i++];
-
-                eventFull.Set();
+                // увеличиваем значение внутреннего счетчика семафора
+                fullSem.Release();
             }
         }
 
@@ -71,30 +68,26 @@ namespace Manual_proj
         {
             int index = (int) readerIndex;
             readedMessages[index] = new List<string>();
+
             while (!isBufferFinish)
             {
-                // ждем сигнал, что буффер заполнен
-                lock ("read")
-                {
-                    eventFull.WaitOne();
-                    eventFull.Reset();
-                }
-
+                // дожидаемся, когда буффер заполнинтся
+                fullSem.Wait();
                 if (isBufferFinish)
                 {
-                    eventFull.Set();
+                    fullSem.Release();
                     break;
                 }
-
                 readedMessages[index].Add(buffer);
-                eventEmpty.Set();
+                emptySem.Release();
+
             }
         }
 
         static void Main(string[] args)
         {
             FillMessages();
-
+            
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -117,8 +110,9 @@ namespace Manual_proj
                 writers[i].Join();
             }
 
+            fullSem.Release();
             isBufferFinish = true;
-            eventFull.Set();
+            
 
             for (int i = 0; i < readersCount; i++)
             {
